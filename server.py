@@ -17,7 +17,7 @@ while True:
     connection, address = s.accept()
     
     request = connection.recv(1024)
-    print('接收来自 client 的"请求"')
+    print('接收来自 ip {} 的 "请求"\n{}'.format(address, request.decode('utf-8'))
     
     response = b'<h1>Hello World!</h1>'
     connection.sendall(response)

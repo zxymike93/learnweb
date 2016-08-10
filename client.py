@@ -18,6 +18,11 @@ request = http_request.encode('utf-8')
 s.send(request)
 print('发送"请求"', request)
 
-response = s.recv(1024)
-print('收到"响应"', response)
+response = b''
+while True:
+    r = s.recv(1024)
+    response += r
+    if len(r) == 0:
+      break
+    # print('收到"响应"', response)
 print('把'响应'转为 str 格式', response.decode('utf-8'))

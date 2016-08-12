@@ -1,6 +1,7 @@
 #! python3
 
 import socket
+import ssl
 
 
 def parsed_url(url):
@@ -48,7 +49,11 @@ def socket_by_protocol(protocol):
     使用不同的 socket 初始化方式
     返回一个 socket 实例
     """
-    pass
+    if protocol == 'https':
+        s = ssl.wrap_socket(socket.socket())
+    else:
+        s = socket.socket()
+    return s
 
 
 def response_by_socket(s):

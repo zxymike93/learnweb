@@ -79,7 +79,16 @@ def parsed_response(r):
     headers 是 dict
     body 是 str
     """
-    pass
+    header, body = r.split('\r\n\r\n', 1)
+    h = header.split('\r\n')
+    status_code = int(h[0].split()[1])
+    
+    headers = {}
+    for line in h[1:]:
+        k, v = line.split(': ')
+        headers[k] = v
+    
+    return status_code, headers, body
 
 
 # 把上面复杂的逻辑全部封装成函数

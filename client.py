@@ -126,9 +126,69 @@ def get(url):
 
 def main():
     url = 'http://movie.douban.com/top250'
-    r = get(url)
-    print(r)
+    status_code, headers, body = get(url)
+    print(status_code, headers, body)
+
+
+def test_parsed_url():
+    """
+    parsed_url 函数很容易出错
+    所以要有测试函数来检测其是否正确
+    """
+    http = 'http'
+    https = 'https'
+    host = 'g.cn'
+    path = '/'
+    test_items = {
+        ('g.cn', (http, host, 80, path))
+        ('http://g.cn', (http, host, 80, path))
+        ('http://g.cn/', (http, host, 80, path))
+        ('http://g.cn:90', (http, host, 90, path))
+        ('http://g.cn:90/search', (http, host, 90, '/search'))
+        ('https://g.cn', (https, host, 443, path))
+    }
+    for item in test_items:
+        url, expected = item
+        u = parsed_url(url)
+        # assert 是一个语句 ‘断言’
+        # 如果断言成功，条件成立，则通过测试，否则测试失败，终端程序报错
+        e = "parsed_url Error, ({}) ({}) ({})".format(url, u, expected)
+        assert u == expected, e
+
+
+def test_parsed_response():
+    response = 'HTTP/1.1 301 Moved Permanently\r\n' \
+               'Content-Type: text/html\r\n' \
+               'Location: https://movie.douban.com/top250\r\n' \
+               'Content-Length: 178\r\n\r\n' \
+               'test body'
+    status_code, header, body = parsed_response(response)
+    assert status_code == 301
+    assert len(list(header.keys())) == 3
+    assert body == 'test body'
+
+
+def test_get():
+    """
+    测试是否能正确处理 HTTP 和 HTTPS
+    """
+    urls = [
+        'http://movie.douban.com/top250',
+        'https://movie.douban.com/top250',
+    ]
+    for u in urls:
+        get(u)
+
+
+def test():
+    """
+    用于测试的主函数
+    """
+    test_parsed_url()
+    test_parsed_response()
+    test_get()
 
 
 if __name__ == '__main__':
+    test()
     main()

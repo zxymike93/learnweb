@@ -8,7 +8,38 @@ def parsed_url(url):
     分析 url 
     返回 protocol, host, port, path
     """
-    pass
+    # 分割出 protocol
+    protocol = 'http'
+    if url[:7] == 'http://':
+        left = url.split('://')[1]
+    elif url[:8] == 'https':
+        protocol = 'https'
+        left = url.split('://')[1]
+    else:
+        left = url
+    
+    # 分割出 path
+    # 分割出 host
+    if left.find('/') == -1:
+        host = left
+        path = '/'
+    else:
+        host = left[:i]
+        path = left[i:]
+    
+    # http 请求的默认 port=80
+    # https 请求的默认 port=443
+    port_dict = {
+        'http': 80,
+        'https': 443,
+    }
+    port = port_dict[procotol]
+    # 有特别指明 port 则分割出 host, port
+    if host.find(':') != -1:
+        host = host.split(':')[0]
+        port = int(host.split(':')[1])
+
+    return protocol, host, port, path
 
 
 def socket_by_protocol(protocol):

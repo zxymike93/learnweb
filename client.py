@@ -62,7 +62,14 @@ def response_by_socket(s):
     返回这个 socket 读取（传输）的所有数据
     也就是 response
     """
-    pass
+    response = b''
+    buffer_size = 1024
+    while True:
+        r = s.recv(buffer_size)
+        response += r
+        if len(r) == 0:
+            break
+    return response
 
 
 def parsed_response(r):
@@ -106,6 +113,7 @@ def get(url):
         return get(url)
     
     return status_code, headers, body
+
 
 def main():
     url = 'http://movie.douban.com/top250'

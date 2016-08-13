@@ -26,14 +26,20 @@ def route_index():
     """
     PATH  '/'
     """
-    pass
+    header = 'HTTP/1.X 200 OK\r\nContent-Type: text/html\r\n'
+    body = '<h1>Hello Gua!</h1><img src="dodge.gif"/>'
+    r = header + '\r\n' + body
+    return r.encode(encoding='utf-8')
 
 
 def route_image():
     """
     PATH  '/doge.gif'
     """
-    pass
+    with open('doge.gif', 'r') as f:
+        header = b'HTTP/1.x 200 OK\r\nContent-Type: image/gif\r\n\r\n'
+        img = header + f.read()
+        return img
 
 
 def route_message():

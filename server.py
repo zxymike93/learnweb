@@ -47,7 +47,12 @@ def log(*args, **kwargs):
 
 
 def template(filename):
-    pass
+    """
+    读取 html 模板文件
+    要转为 utf-8 编码
+    """
+    with open(filename, 'r', encoding='utf-8') as f:
+        return f.read()
 
 
 def route_index():
@@ -97,7 +102,10 @@ def error(code=404):
     根据 code 返回不同的错误响应
     目前只有 404
     """
-    pass
+    e = {
+        404: b'HTTP/1.x 404 NOT FOUND\r\n\r\n<h1>NOT FOUND</h1>',
+    }
+    return e.get(code, b'')
 
 
 def parsed_path(path):

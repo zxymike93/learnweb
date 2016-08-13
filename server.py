@@ -40,7 +40,16 @@ def error(code=404):
 
 
 def parsed_path(path):
-    pass
+    query = {}
+    if path.find('?') == -1:
+        return path, query
+    else:
+        path, query_lined = path.split('?', 1)
+        queries = query.split('&')
+        for i in queries:
+            key, value = i.split('=')
+            query[key] = value
+        return path, query
 
 
 def response_for_path(path):

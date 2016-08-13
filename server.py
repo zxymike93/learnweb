@@ -1,6 +1,7 @@
 #! python3
 
 import socket
+import urllib.parse
 
 
 class Request(object):
@@ -13,6 +14,29 @@ class Request(object):
         self.path = ''
         self.query = {}
         self.body = ''
+    
+    def form(self):
+        # 解决 windows中文版 编码问题
+        body = urllib.parse.unquote(self.body)
+        args = body.split('&')
+        f = {}
+        for arg in args:
+            key, value = arg.split('=')
+            f[key] = value
+        return f
+
+
+class Message(object):
+    def __init__(self):
+        self.author = ''
+        self.passage = ''
+    
+    def __repr__(self):
+        return '{}: {}'.format(self.author, self.passage)
+
+
+message_list = []
+request = Request()
 
 
 def log(*args, **kwargs):
@@ -20,6 +44,10 @@ def log(*args, **kwargs):
     用 log 代替 print
     """
     print('log', *args, **kwargs)
+
+
+def template(filename):
+    pass
 
 
 def route_index():
@@ -45,8 +73,23 @@ def route_image():
 def route_message():
     """
     PATH  '/messages'
+    留言板页面
     """
-    pass
+    log('本次请求的 method 是', request.method)
+    if request.method == 'POST':
+        msg = Message()
+        form = request.form()
+        log('Post', form)
+        msg.author = form.get('Author', '')
+        msg.passage = form.get('Passage', '')
+        # 应该在这里保存 message_list
+    header = 'HTTP/1.x 200 OK\r\nContent-Type: text/html\r\n'
+    # 渲染一个模板
+    body = template('html_basic.html')
+    msgs = '<br>'.join([str(m) for m in message_list])
+    body = body.replace('{{message}}', msgs)
+    r = header + '\r\n' + body
+    return r.encode(encoding='utf-8')
 
 
 def error(code=404):

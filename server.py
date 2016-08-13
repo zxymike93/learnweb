@@ -7,7 +7,7 @@ def log(*args, **kwargs):
     """
     用 log 代替 print
     """
-    pass
+    print('log', *args, **kwargs)
 
 
 def error(code=404):

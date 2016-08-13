@@ -3,6 +3,18 @@
 import socket
 
 
+class Request(object):
+    """
+    定义一个 class Request
+    用来保存请求的数据
+    """
+    def __init__(self):
+        self.method = 'GET'
+        self.path = ''
+        self.query = {}
+        self.body = ''
+
+
 def log(*args, **kwargs):
     """
     用 log 代替 print
@@ -83,6 +95,7 @@ def run(host='', port=3000):
             # 监听/接收/读取 请求数据，编码成字符串
             s.listen(3)
             # accept() 接收来自 client 的连接
+            # 用 Request类 储存
             connection, address = s.accept()
             req = connection.recv(1024)
             req = req.decode('utf-8')
@@ -93,9 +106,9 @@ def run(host='', port=3000):
                 # 用 try 放置程序崩溃
                 path = req.split()[1]
                 # 设置 request 的 method
-                request.method = r.split()[0]
+                request.method = req.split()[0]
                 # 把 body 放入 request 中
-                request.body = r.split('\r\n\r\n', 1)[1]
+                request.body = req.split('\r\n\r\n', 1)[1]
                 # 用 response_for_path 函数来得到 path 对应的响应内容（页面）
                 response = resoponse_for_path(path)
                 # Send response to Client

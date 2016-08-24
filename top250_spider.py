@@ -2,7 +2,35 @@
 
 import socket
 import ssl
-import re
+# import re
+# 用 lxml库 里的 html类 来对 body 做处理
+from lxml import html
+
+
+class Model(object):
+    """
+    log(movies) 会调用 str(movies)
+    首先会查找 m.__str__() 其次是 m.__repr__()
+    如果 Movie类 没有这两个方法
+    就会一直往上在它的父类里面寻找这两个方法
+    """
+    def __repr__(self):
+        class_name = self.__class__.__name__
+        properties = (u'{} = ({})'.format(k, v) for k, v in self.__dict__.items())
+        r = u'\n<{}:\n  {}\n>'.format(class_name, u'\n  '.join(properties))
+        return r
+
+
+class Movie(Model):
+    def __init__(self):
+        self.ranking = 0
+        self.cover_url = ''
+        self.name = ''
+        self.staff = ''
+        self.publish_info = ''
+        self.rating = 0
+        self.quote = ''
+        self.number_of_comments = 0
 
 
 def log(*args, **kwargs):
@@ -99,32 +127,9 @@ def parsed_response(r):
     return status_code, headers, body
 
 
-def spider(body, page):
-    """
-    爬取函数
-    """
-    re_title = r'<span class="title">(.*?)</span>'
-    re_rating = r'<span class="rating_num" property="v:average">(\d.\d)</span>'
-    # re_votes = r'<span>('人评价'$)</span>'
-    # re_quote = r'<span class="inq">(.*?)</span>'
-
-    title = re.findall(re_title, body, re.S)
-    rating = re.findall(re_rating, body, re.S)
-    # votes = re.findall(re_votes, body, re.S)
-    # quote = re.findall(re_quote, body, re.S)
-
-    top = 0
-    p = page * 25
-    # 过滤大陆以外的片名
-    for t in title:
-        if t.find('&nbsp') == -1:
-            log('Top{} 《{}》 {}分'.format(str(top + p + 1), t, rating[top]))
-            top += 1
-
-
 def get(url):
     """
-    发送 GET请求 并返回 响应
+    发送 GET请求 并得到 响应
     包含 状态码 / headers / body
     """
     # 分析出 url 的 protocol, host, port, path
@@ -154,74 +159,44 @@ def get(url):
     return status_code, headers, body
 
 
+def movie_from_div(div):
+    """
+    . 表示从当前路径 div 下面查找
+    text 是 开始/结束标签 之间的信息
+    """
+    movie = Movie()
+    movie.ranking = div.xpath('.//div[@class="pic"]/em')[0].text
+    movie.cover_url = div.xpath('.//div[@class="pic"]/a/img/@src')
+    names = div.xpath('.//span[@class="title"]/text()')
+    movie.name = ''.join(names)
+    movie.rating = div.xpath('.//span[@class="rating_num"]')[0].text
+    movie.quote = div.xpath('.//span[@class="inq"]')[0].text
+    infos = div.xpath('.//div[@class="bd"]/p/text()')
+    movie.staff, movie.publish_info = [i.strip() for i in infos[:2]]
+    movie.number_of_comments = div.xpath('.//div[@class="star"]/span')[-1].text[:-3]
+    return movie
+
+
+def movie_from_url(url):
+    # status_code, headers 用 _ 替换掉
+    status_code, headers, page = get(url)
+    # 把 page 转换成 html类，它的 xpath方法 可以查找数据
+    root = html.fromstring(page)
+    # @ 表示属性
+    # // 表示从 html 根源处开始查找所有
+    # class="item" 每页有25条，即每页25部电影
+    movie_divs = root.xpath('//div[@class="item"]')
+    movies = [movie_from_div(div) for div in movie_divs]
+    return movies
+
+
 def main():
-    url = 'http://movie.douban.com/top250?start='
-    for page in range(10):
-        u = url + str(page * 25)
-        status_code, headers, body = get(u)
-        # print(status_code, headers, body)
-        spider(body, page)
-
-
-def test_parsed_url():
-    """
-    parsed_url 函数很容易出错
-    所以要有测试函数来检测其是否正确
-    """
-    http = 'http'
-    https = 'https'
-    host = 'g.cn'
-    path = '/'
-    test_items = [
-        ('g.cn', (http, host, 80, path)),
-        ('http://g.cn', (http, host, 80, path)),
-        ('http://g.cn/', (http, host, 80, path)),
-        ('http://g.cn:90', (http, host, 90, path)),
-        ('http://g.cn:90/search', (http, host, 90, '/search')),
-        ('https://g.cn', (https, host, 443, path)),
-    ]
-    for item in test_items:
-        url, expected = item
-        u = parsed_url(url)
-        # assert 是一个语句 ‘断言’
-        # 如果断言成功，条件成立，则通过测试，否则测试失败，终端程序报错
-        e = "parsed_url Error, ({}) ({}) ({})".format(url, u, expected)
-        assert u == expected, e
-
-
-def test_parsed_response():
-    response = 'HTTP/1.1 301 Moved Permanently\r\n' \
-               'Content-Type: text/html\r\n' \
-               'Location: https://movie.douban.com/top250\r\n' \
-               'Content-Length: 178\r\n\r\n' \
-               'test body'
-    status_code, header, body = parsed_response(response)
-    assert status_code == 301
-    assert len(list(header.keys())) == 3
-    assert body == 'test body'
-
-
-def test_get():
-    """
-    测试是否能正确处理 HTTP 和 HTTPS
-    """
-    urls = [
-        'http://movie.douban.com/top250',
-        'https://movie.douban.com/top250',
-    ]
-    for u in urls:
-        get(u)
-
-
-def test():
-    """
-    用于测试的主函数
-    """
-    test_parsed_url()
-    test_parsed_response()
-    test_get()
+    url = 'http://movie.douban.com/top250'
+    movies = movie_from_url(url)
+    log('Names', names)
+    log('movies', movies[0])
+    # download_covers(movies)
 
 
 if __name__ == '__main__':
-    test()
     main()

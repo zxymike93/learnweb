@@ -3,6 +3,9 @@
 import socket
 import urllib.parse
 
+from utils import log
+from routes import route_index, route_static, route_message
+
 
 class Request(object):
     """
@@ -26,78 +29,10 @@ class Request(object):
         return f
 
 
-class Message(object):
-    def __init__(self):
-        self.author = ''
-        self.passage = ''
-    
-    def __repr__(self):
-        return '{}: {}'.format(self.author, self.passage)
-
-
-message_list = []
 request = Request()
 
 
-def log(*args, **kwargs):
-    """
-    用 log 代替 print
-    """
-    print('log', *args, **kwargs)
-
-
-def template(filename):
-    """
-    读取 html 模板文件
-    要转为 utf-8 编码
-    """
-    with open(filename, 'r', encoding='utf-8') as f:
-        return f.read()
-
-
-def route_index():
-    """
-    PATH  '/'
-    """
-    header = 'HTTP/1.X 200 OK\r\nContent-Type: text/html\r\n'
-    body = '<h1>Hello Gua!</h1><img src="dodge.gif"/>'
-    r = header + '\r\n' + body
-    return r.encode(encoding='utf-8')
-
-
-def route_image():
-    """
-    PATH  '/doge.gif'
-    """
-    with open('doge.gif', 'r') as f:
-        header = b'HTTP/1.x 200 OK\r\nContent-Type: image/gif\r\n\r\n'
-        img = header + f.read()
-        return img
-
-
-def route_message():
-    """
-    PATH  '/messages'
-    留言板页面
-    """
-    log('本次请求的 method 是', request.method)
-    if request.method == 'POST':
-        msg = Message()
-        form = request.form()
-        log('Post', form)
-        msg.author = form.get('Author', '')
-        msg.passage = form.get('Passage', '')
-        # 应该在这里保存 message_list
-    header = 'HTTP/1.x 200 OK\r\nContent-Type: text/html\r\n'
-    # 渲染一个模板
-    body = template('html_basic.html')
-    msgs = '<br>'.join([str(m) for m in message_list])
-    body = body.replace('{{message}}', msgs)
-    r = header + '\r\n' + body
-    return r.encode(encoding='utf-8')
-
-
-def error(code=404):
+def error(request, code=404):
     """
     根据 code 返回不同的错误响应
     目前只有 404
@@ -114,7 +49,7 @@ def parsed_path(path):
         return path, query
     else:
         path, query_lined = path.split('?', 1)
-        queries = query.split('&')
+        queries = query_lined.split('&')
         for i in queries:
             key, value = i.split('=')
             query[key] = value
@@ -129,15 +64,15 @@ def response_for_path(path):
     path, query = parsed_path(path)
     request.path = path
     request.query = query
-    log('path and query', path,query)
+    log('path and query', path, query)
     
     responses = {
         '/': route_index,
         '/messages': route_message,
-        '/doge.gif': route_image,
+        '/static': route_static,
     }
     response = responses.get(path, error)
-    return response()
+    return response(request)
 
 
 def run(host='', port=3000):
@@ -167,7 +102,7 @@ def run(host='', port=3000):
                 # 把 body 放入 request 中
                 request.body = req.split('\r\n\r\n', 1)[1]
                 # 用 response_for_path 函数来得到 path 对应的响应内容（页面）
-                response = resoponse_for_path(path)
+                response = response_for_path(path)
                 # Send response to Client
                 connection.sendall(response)
             except Exception as e:

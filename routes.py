@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from utils import log
-from models import Message
+from models import User, Message
 
 
 message_list = []
@@ -22,6 +22,40 @@ def route_index(request):
     """
     header = 'HTTP/1.X 200 OK\r\nContent-Type: text/html\r\n'
     body = template('index.html')
+    r = header + '\r\n' + body
+    return r.encode(encoding='utf-8')
+
+
+def route_login(request):
+    header = 'HTTP/1.X 200 OK\r\nContent-Type: text/html\r\n'
+    if request.method == 'POST':
+        form = request.form()
+        usr = User(form)
+        if usr.validate_login():
+            result = 'True'
+        else:
+            result = 'False'
+    else:
+        result = ''
+    body = template('login.html')
+    body = body.replace('{{result}}', result)
+    r = header + '\r\n' + body
+    return r.encode(encoding='utf-8')
+
+
+def route_register(request):
+    header = 'HTTP/1.X 200 OK\r\nContent-Type: text/html\r\n'
+    if request.method == 'POST':
+        form = request.form()
+        usr = User(form)
+        if usr.validate_register():
+            result = 'True'
+        else:
+            result = 'Username and Password must longer than 3 words.'
+    else:
+        result = ''
+    body = template('register.html')
+    body = body.replace('{{result}}', result)
     r = header + '\r\n' + body
     return r.encode(encoding='utf-8')
 
@@ -56,3 +90,11 @@ def route_message(request):
     body = body.replace('{{messages}}', msgs)
     r = header + '\r\n' + body
     return r.encode(encoding='utf-8')
+
+
+route_dict = {
+    '/': route_index,
+    '/message': route_message,
+    '/login': route_login,
+    '/register': route_register,
+}

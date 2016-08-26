@@ -4,7 +4,7 @@ import socket
 import urllib.parse
 
 from utils import log
-from routes import route_index, route_static, route_message
+from routes import route_dict, route_static
 
 
 class Request(object):
@@ -67,10 +67,9 @@ def response_for_path(path):
     log('path and query', path, query)
     
     responses = {
-        '/': route_index,
-        '/messages': route_message,
         '/static': route_static,
     }
+    responses.update(route_dict)
     response = responses.get(path, error)
     return response(request)
 

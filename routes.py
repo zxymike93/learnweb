@@ -49,7 +49,8 @@ def route_register(request):
         form = request.form()
         usr = User(form)
         if usr.validate_register():
-            result = 'True'
+            usr.save()
+            result = 'True<br/> <pre>{}</pre>'.format(User.all())
         else:
             result = 'Username and Password must longer than 3 words.'
     else:

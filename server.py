@@ -1,4 +1,5 @@
 #! python3
+# coding= utf-8
 
 import socket
 import urllib.parse
@@ -11,13 +12,35 @@ class Request(object):
     """
     定义一个 class Request
     用来保存请求的数据
+    对于 Cookies 需要额外的处理
+    所以添加 headers 和 cookies
     """
     def __init__(self):
         self.method = 'GET'
         self.path = ''
         self.query = {}
         self.body = ''
-    
+        self.headers = {}
+        self.cookies = {}
+
+    def add_headers(self, header):
+        lines = header
+        for line in lines:
+            k, v = line.split(': ', 1)
+            self.headers[k] = v
+        # 调用 add_cookies 要在循环外面
+        # 否则 'Cookie' 会被覆盖
+        self.add_cookies()
+
+    def add_cookies(self):
+        cookies = self.headers.get('Cookie', '')
+        cks = cookies.split('; ')
+        log('all cookies', cks)
+        for ck in cks:
+            if '=' in ck:
+                k, v = ck.split('=')
+                self.cookies[k] = v
+
     def form(self):
         # 解决 windows中文版 编码问题
         body = urllib.parse.unquote(self.body)
@@ -64,7 +87,7 @@ def response_for_path(path):
     path, query = parsed_path(path)
     request.path = path
     request.query = query
-    log('path and query', path, query)
+    # log('path and query', path, query)
     
     responses = {
         '/static': route_static,
@@ -90,7 +113,7 @@ def run(host='', port=3000):
             connection, address = s.accept()
             req = connection.recv(1024)
             req = req.decode('utf-8')
-            # log('ip and request, {}\n{}'.format(address, req))
+            log('ip and request, {}\n{}'.format(address, req))
             # try..except.. 排除会引起异常的请求
             try:
                 # chrome 会发空请求导致 split 得到空 list
@@ -98,6 +121,8 @@ def run(host='', port=3000):
                 path = req.split()[1]
                 # 设置 request 的 method
                 request.method = req.split()[0]
+                # 把 headers 第一行的请求行去掉之后再传入 add_headers
+                request.add_headers(req.split('\r\n\r\n', 1)[0].split('\r\n')[1:])
                 # 把 body 放入 request 中
                 request.body = req.split('\r\n\r\n', 1)[1]
                 # 用 response_for_path 函数来得到 path 对应的响应内容（页面）

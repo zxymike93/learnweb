@@ -68,7 +68,9 @@ class User(Model):
         self.password = form.get('password', '')
 
     def validate_login(self):
-        return self.username == 'mike' and self.password == '123'
+        # 为了测试 Set-Cookie 让所有登录的用户都通过验证
+        return True
+
 
     def validate_register(self):
         return len(self.username) > 3 and len(self.password) >3

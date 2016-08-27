@@ -26,12 +26,27 @@ def route_index(request):
     return r.encode(encoding='utf-8')
 
 
+def response_with_header(headers):
+    header = 'HTTP/1.X 200 OK\r\n'
+    #  \r\n 不放在 join 前面，保证每个 header 都换行
+    header += ''.join(['{}: {}\r\n'.format(k, v)
+                           for k, v in headers.items()])
+    return header
+
+
 def route_login(request):
-    header = 'HTTP/1.X 200 OK\r\nContent-Type: text/html\r\n'
+    headers = {
+        'Content-Type': 'text/html',
+        # 'Set-Cookie': 'user=gua; height=169',
+    }
+    username = request.cookies.get('user', 'guest')
     if request.method == 'POST':
+        log('login, self.headers', request.headers)
+        log('login, self.cookies', request.cookies)
         form = request.form()
         usr = User(form)
         if usr.validate_login():
+            headers['Set-Cookie'] = 'user={}'.format(usr.username)
             result = 'True'
         else:
             result = 'False'
@@ -39,6 +54,9 @@ def route_login(request):
         result = ''
     body = template('login.html')
     body = body.replace('{{result}}', result)
+    body = body.replace('{{username}}', username)
+    # Set-Cookie 是在登录成功之后发送，所以在响应前生成 header
+    header = response_with_header(headers)
     r = header + '\r\n' + body
     return r.encode(encoding='utf-8')
 

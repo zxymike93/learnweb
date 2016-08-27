@@ -48,6 +48,20 @@ class Model(object):
         all_ins = [cls(i) for i in data]
         return all_ins
 
+    @classmethod
+    def find_by(cls, **kwargs):
+        """
+        find_by 通过用户的某项信息查找匹配该信息的所有用户
+        """
+        k, v = '', ''
+        for key, val in kwargs.items():
+            k, v = key, val
+        all = cls.all()
+        for m in all:
+            if v == m.__dict__[k]:
+                return m
+        return None
+
     def __repr__(self):
         class_name = self.__class__.__name__
         properties = ['{}: ({})'.format(k, v) for k, v in self.__dict__.items()]
@@ -68,8 +82,9 @@ class User(Model):
         self.password = form.get('password', '')
 
     def validate_login(self):
-        # 为了测试 Set-Cookie 让所有登录的用户都通过验证
-        return True
+        usr = User.find_by(username=self.username)
+        if usr is not None and usr.password == self.password:
+            return True
 
 
     def validate_register(self):
@@ -80,3 +95,13 @@ class Message(Model):
     def __init__(self, form):
         self.author = form.get('author', '')
         self.message = form.get('message', '')
+
+
+def test():
+    users = User.all()
+    u = User.find_by(username='apple')
+    log('users', u)
+
+
+if __name__ == '__main__':
+    test()

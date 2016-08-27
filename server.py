@@ -35,7 +35,7 @@ class Request(object):
     def add_cookies(self):
         cookies = self.headers.get('Cookie', '')
         cks = cookies.split('; ')
-        log('all cookies', cks)
+        # log('all cookies', cks)
         for ck in cks:
             if '=' in ck:
                 k, v = ck.split('=')
@@ -113,7 +113,7 @@ def run(host='', port=3000):
             connection, address = s.accept()
             req = connection.recv(1024)
             req = req.decode('utf-8')
-            log('ip and request, {}\n{}'.format(address, req))
+            # log('ip and request, {}\n{}'.format(address, req))
             # try..except.. 排除会引起异常的请求
             try:
                 # chrome 会发空请求导致 split 得到空 list

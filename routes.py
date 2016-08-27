@@ -3,8 +3,25 @@
 from utils import log
 from models import User, Message
 
+import random
 
 message_list = []
+# session 字典里 每个随机生成的'session_id' 对应一个 'username'
+session = {}
+
+
+def random_str():
+    """
+    生成随机字符串的函数
+     用来生成 session_id
+    """
+    seed = 'qwertyuiopasdfghjklzxcvbnm1234567890'
+    s = ''
+    for i in range(7):
+        random_index = random.randint(0, len(seed)-1)
+        s += seed[random_index]
+    return s
+
 
 def template(filename):
     """
@@ -16,12 +33,20 @@ def template(filename):
         return f.read()
 
 
+def current_user(request):
+    session_id = request.cookies.get('user', '')
+    username = session.get(session_id, 'guest')
+    return username
+
+
 def route_index(request):
     """
     PATH  '/'
     """
     header = 'HTTP/1.X 200 OK\r\nContent-Type: text/html\r\n'
     body = template('index.html')
+    username = current_user(request)
+    body = body.replace('{{username}}', username)
     r = header + '\r\n' + body
     return r.encode(encoding='utf-8')
 
@@ -39,14 +64,17 @@ def route_login(request):
         'Content-Type': 'text/html',
         # 'Set-Cookie': 'user=gua; height=169',
     }
-    username = request.cookies.get('user', 'guest')
+    username = current_user(request)
     if request.method == 'POST':
-        log('login, self.headers', request.headers)
+        # log('login, self.headers', request.headers)
         log('login, self.cookies', request.cookies)
         form = request.form()
         usr = User(form)
         if usr.validate_login():
-            headers['Set-Cookie'] = 'user={}'.format(usr.username)
+            # session 使 cookie 不能被轻易伪造
+            session_id = random_str()
+            session[session_id] = usr.username
+            headers['Set-Cookie'] = 'user={}'.format(session_id)
             result = 'True'
         else:
             result = 'False'

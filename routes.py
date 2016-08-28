@@ -51,8 +51,9 @@ def route_index(request):
     return r.encode(encoding='utf-8')
 
 
-def response_with_header(headers):
-    header = 'HTTP/1.X 200 OK\r\n'
+def response_with_header(headers, status_code=200):
+    # status_code 应该有个字典，有对应的描述
+    header = 'HTTP/1.x {} OK\r\n'.format(status_code)
     #  \r\n 不放在 join 前面，保证每个 header 都换行
     header += ''.join(['{}: {}\r\n'.format(k, v)
                            for k, v in headers.items()])
@@ -95,6 +96,7 @@ def route_register(request):
         form = request.form()
         usr = User(form)
         if usr.validate_register():
+            # log('DEBUG-form-usr', usr)
             usr.save()
             result = 'True<br/> <pre>{}</pre>'.format(User.all())
         else:
@@ -124,14 +126,27 @@ def route_message(request):
     PATH  '/messages'
     留言板页面
     """
+    headers = {
+        'Content-Type': 'text/html',
+        # 'Set-Cookie': 'user=gua; height=169',
+        # 'Location': '/message',
+    }
     log('本次请求的 method 是', request.method)
+    username = current_user(request)
+    if username == 'guest':
+        # 如果用户没登录，重定向到 login 页面
+        headers['Location'] = '/login'
+        header = response_with_header(headers, 302)
+        r = header + '\r\n' + ''
+        return r.encode(encoding='utf-8')
+    else:
+        header = response_with_header(headers)
     if request.method == 'POST':
         form = request.form()
         msg = Message(form)
         message_list.append(msg)
         # 应该在这里保存 message_list
-    header = 'HTTP/1.x 200 OK\r\nContent-Type: text/html\r\n'
-    # 渲染一个模板
+    #  渲染一个模板
     body = template('html_basic.html')
     msgs = '<br>'.join([str(m) for m in message_list])
     body = body.replace('{{messages}}', msgs)

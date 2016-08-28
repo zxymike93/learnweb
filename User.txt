@@ -1,14 +1,12 @@
 [
   {
-    "username": "apple",
-    "password": "banana"
-  },
-  {
-    "username": "banban",
-    "password": "djaifdjsia"
-  },
-  {
+    "id": 1,
     "username": "mike",
-    "password": "melo"
+    "password": "1234"
+  },
+  {
+    "id": 2,
+    "username": "gayu",
+    "password": "1234"
   }
 ]

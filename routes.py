@@ -23,14 +23,19 @@ def random_str():
     return s
 
 
-def template(filename):
+def template(filename, **kwargs):
     """
     读取 html 模板文件
     要转为 utf-8 编码
+    原来 boby 里面的 replace 放到这里
+    占位符当作参数传入
     """
     path = 'templates/' + filename
     with open(path, 'r', encoding='utf-8') as f:
-        return f.read()
+        t = f.read()
+        for k, v in kwargs.items():
+            t = t.replace('{{' + k + '}}', str(v))
+        return t
 
 
 def redirect(location):
@@ -54,9 +59,8 @@ def route_index(request):
     PATH  '/'
     """
     header = 'HTTP/1.X 200 OK\r\nContent-Type: text/html\r\n'
-    body = template('index.html')
     username = current_user(request)
-    body = body.replace('{{username}}', username)
+    body = template('index.html'， username=username)
     r = header + '\r\n' + body
     return r.encode(encoding='utf-8')
 
@@ -91,9 +95,7 @@ def route_login(request):
             result = 'False'
     else:
         result = ''
-    body = template('login.html')
-    body = body.replace('{{result}}', result)
-    body = body.replace('{{username}}', username)
+    body = template('login.html', result=result, username=username)
     # Set-Cookie 是在登录成功之后发送，所以在响应前生成 header
     header = response_with_header(headers)
     r = header + '\r\n' + body
@@ -113,11 +115,28 @@ def route_register(request):
             result = 'Username and Password must longer than 3 words.'
     else:
         result = ''
-    body = template('register.html')
-    body = body.replace('{{result}}', result)
+    body = template('register.html', result=result)
     r = header + '\r\n' + body
     return r.encode(encoding='utf-8')
 
+
+def route_profile(request):
+    headers = {
+        'Content-Type': 'text/html',
+    }
+    username = current_user(request)
+    if username == 'guest':
+        return redirect('/')
+    else:
+        header = response_with_header(headers)
+    # 返回当前用户的实例，以便后面调用它的属性
+    user = User.find_by(username=username)
+    body = template('profile.html',
+                     id=user.id,
+                     username=user.username,
+                     note=user.note)
+    r = header + '\r\n' + body
+    return r.encode(encoding='utf-8')
 
 def route_static(request):
     """
@@ -154,9 +173,8 @@ def route_message(request):
         message_list.append(msg)
         # 应该在这里保存 message_list
     #  渲染一个模板
-    body = template('html_basic.html')
     msgs = '<br>'.join([str(m) for m in message_list])
-    body = body.replace('{{messages}}', msgs)
+    body = template('html_basic.html', messages=msgs)
     r = header + '\r\n' + body
     return r.encode(encoding='utf-8')
 
@@ -166,4 +184,5 @@ route_dict = {
     '/message': route_message,
     '/login': route_login,
     '/register': route_register,
+    '/profile': route_profile,
 }

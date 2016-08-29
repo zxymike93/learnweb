@@ -33,6 +33,16 @@ def template(filename):
         return f.read()
 
 
+def redirect(location):
+    headers = {
+        'Content-Type': 'text/html',
+    }
+    headers['Location'] = location
+    header = response_with_header(headers, 302)
+    r = header + '\r\n' + ''
+    return r.encode(encoding='utf-8')
+
+
 def current_user(request):
     session_id = request.cookies.get('user', '')
     username = session.get(session_id, 'guest')
@@ -135,10 +145,7 @@ def route_message(request):
     username = current_user(request)
     if username == 'guest':
         # 如果用户没登录，重定向到 login 页面
-        headers['Location'] = '/login'
-        header = response_with_header(headers, 302)
-        r = header + '\r\n' + ''
-        return r.encode(encoding='utf-8')
+        return redirect('/')
     else:
         header = response_with_header(headers)
     if request.method == 'POST':

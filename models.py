@@ -64,7 +64,8 @@ class Model(object):
 
     @classmethod
     def find(cls, id):
-        # 右边的 id 是传入的参数
+        # 左边的 id 是指以 id 来查找用户
+        # 右边的 id 是传入的用户 id参数
         return cls.find_by(id=id)
 
     def __repr__(self):
@@ -79,6 +80,7 @@ class Model(object):
         """
         # 初始化所有的用户实例
         all_ins = self.all()
+        # log('DEBUG-save-all_ins', all_ins)
         # 如果该注册的用户还没有 id ，即新用户
         if self.id is None:
             # 如果是空 list，说明“数据库”还没有元素
@@ -114,6 +116,7 @@ class User(Model):
         self.id = form.get('id', None)
         self.username = form.get('username', '')
         self.password = form.get('password', '')
+        self.note = form.get('note', '')
 
     def validate_login(self):
         usr = User.find_by(username=self.username)

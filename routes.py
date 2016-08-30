@@ -1,24 +1,14 @@
 #!/usr/bin/env python3
 
 from utils import log
-from models import User, Message, Weibo
+from models import User, Message
+
+from response import session, error, template, redirect, response_with_header
 
 import random
 
+
 message_list = []
-# session 字典里 每个随机生成的'session_id' 对应一个 'username'
-session = {}
-
-
-def error(request, code=404):
-    """
-    根据 code 返回不同的错误响应
-    目前只有 404
-    """
-    e = {
-        404: b'HTTP/1.x 404 NOT FOUND\r\n\r\n<h1>NOT FOUND</h1>',
-    }
-    return e.get(code, b'')
 
 
 def random_str():
@@ -34,44 +24,10 @@ def random_str():
     return s
 
 
-def template(filename, **kwargs):
-    """
-    读取 html 模板文件
-    要转为 utf-8 编码
-    原来 boby 里面的 replace 放到这里
-    占位符当作参数传入
-    """
-    path = 'templates/' + filename
-    with open(path, 'r', encoding='utf-8') as f:
-        t = f.read()
-        for k, v in kwargs.items():
-            t = t.replace('{{' + k + '}}', str(v))
-        return t
-
-
-def redirect(location):
-    headers = {
-        'Content-Type': 'text/html',
-    }
-    headers['Location'] = location
-    header = response_with_header(headers, 302)
-    r = header + '\r\n' + ''
-    return r.encode(encoding='utf-8')
-
-
 def current_user(request):
     session_id = request.cookies.get('user', '')
     username = session.get(session_id, 'guest')
     return username
-
-
-def response_with_header(headers, status_code=200):
-    # status_code 应该有个字典，有对应的描述
-    header = 'HTTP/1.x {} OK\r\n'.format(status_code)
-    #  \r\n 不放在 join 前面，保证每个 header 都换行
-    header += ''.join(['{}: {}\r\n'.format(k, v)
-                           for k, v in headers.items()])
-    return header
 
 
 def route_index(request):
@@ -136,6 +92,7 @@ def route_profile(request):
     headers = {
         'Content-Type': 'text/html',
     }
+    username = current_user(request)
     header = response_with_header(headers)
     # 返回当前用户的实例，以便后面调用它的属性
     user = User.find_by(username=username)
@@ -183,87 +140,6 @@ def route_message(request):
     return r.encode(encoding='utf-8')
 
 
-def route_weibo_index(request):
-    headers = {
-        'Content-Type': 'text/html',
-    }
-    header = response_with_header(headers)
-    user_id = request.query.get('user_id', -1)
-    user_id = int(user_id)
-    user = User.find(user_id)
-    if user is None:
-        return error(request)
-    # 找到 user 发布的所有 weibo
-    weibos = Weibo.find_all(user_id=user.id)
-    # 手动处理 weibos 这个 list
-    # 把每个 weibo 以 <p> 的形式展现在页面
-    def weibo_tag(weibo):
-        return '<p>{} from {}@{} <a href="/weibo/delete?id={}">删除</a></p>'.format(
-            weibo.content,
-            user.username,
-            weibo.created_time,
-            weibo.id,
-        )
-    # 用 join() 返回 str
-    weibos = ''.join([weibo_tag(w) for w in weibos])
-    body = template('weibo_index.html', weibos=weibos)
-    r = header + '\r\n' + body
-    return r.encode(encoding='utf-8')
-
-
-def route_weibo_new(request):
-    """
-    返回微博表单的路由
-    """
-    headers = {
-        'Content-Type': 'text/html',
-    }
-    username = current_user(request)
-    header = response_with_header(headers)
-    log('Debug username', username)
-    user = User.find_by(username=username)
-    body = template('weibo_new.html')
-    r = header + '\r\n' + body
-    return r.encode(encoding='utf-8')
-
-
-def route_weibo_add(request):
-    headers = {
-        'Content-Type': 'text/html',
-    }
-    username = current_user(request)
-    log('username', username)
-    header = response_with_header(headers)
-    # log('add header', header)
-    user = User.find_by(username=username)
-    # log('add user', user)
-    # 创建微博
-    form = request.form()
-    # log('form', form)
-    w = Weibo(form)
-    # log('w', w)
-    w.user_id = user.id
-    # log('user_id', w.user_id)
-    w.save()
-    # log('save', w)
-    return redirect('/weibo?user_id={}'.format(user.id))
-
-
-def route_weibo_delete(request):
-    headers = {
-        'Content-Type': 'text/html',
-    }
-    username = current_user(request)
-    header = response_with_header(headers)
-    user = User.find_by(username=username)
-    # 删除微博
-    weibo_id = request.query.get('id', None)
-    weibo_id = int(weibo_id)
-    w = Weibo.find(weibo_id)
-    w.delete()
-    return redirect('/weibo?user_id={}'.format(user.id))
-
-
 def login_required(route_function):
     """
     用来验证用户身份
@@ -283,8 +159,4 @@ route_dict = {
     '/register': route_register,
     '/message': login_required(route_message),
     '/profile': login_required(route_profile),
-    '/weibo': route_weibo_index,
-    '/weibo/new': login_required(route_weibo_new),
-    '/weibo/add': login_required(route_weibo_add),
-    '/weibo/delete': login_required(route_weibo_delete),
 }

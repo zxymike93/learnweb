@@ -5,7 +5,10 @@ import socket
 import urllib.parse
 
 from utils import log
-from routes import route_dict, route_static
+
+from routes import route_static
+from routes import route_dict as route_dict_main
+from routes_weibo import route_dict as route_dict_weibo
 
 
 class Request(object):
@@ -92,7 +95,8 @@ def response_for_path(path):
     responses = {
         '/static': route_static,
     }
-    responses.update(route_dict)
+    responses.update(route_dict_main)
+    responses.update(route_dict_weibo)
     response = responses.get(path, error)
     return response(request)
 

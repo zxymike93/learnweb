@@ -2,6 +2,7 @@
 #-*- coding: utf-8 -*-
 
 import json
+import time
 
 from utils import log
 
@@ -47,6 +48,20 @@ class Model(object):
         data = load(path)
         all_ins = [cls(i) for i in data]
         return all_ins
+
+    @classmethod
+    def find_all(cls, **kwargs):
+        """
+        """
+        k, v = '', ''
+        for key, val in kwargs.items():
+            k, v = key, val
+        all = cls.all()
+        models = []
+        for m in all:
+            if v == m.__dict__[k]:
+                models.append(m)
+        return models
 
     @classmethod
     def find_by(cls, **kwargs):
@@ -135,10 +150,23 @@ class Message(Model):
         self.message = form.get('message', '')
 
 
+class Weibo(Model):
+    def __init__(self, form):
+        # 每条微博有一个独立的 id
+        self.id = form.get('id', None)
+        self.content = form.get('content', '')
+        self.created_time = int(time.time())
+        # user_id 用来关联 用户 / 他的微博
+        self.user_id = form.get('user_id', None)
+
+
+def test_weibo():
+    w = Weibo({})
+    log(w.id, w.content, w.created_time)
+
+
 def test():
-    users = User.all()
-    u = User.find_by(username='apple')
-    log('users', u)
+    test_weibo()
 
 
 if __name__ == '__main__':

@@ -1,13 +1,24 @@
 #!/usr/bin/env python3
 
 from utils import log
-from models import User, Message
+from models import User, Message, Weibo
 
 import random
 
 message_list = []
 # session 字典里 每个随机生成的'session_id' 对应一个 'username'
 session = {}
+
+
+def error(request, code=404):
+    """
+    根据 code 返回不同的错误响应
+    目前只有 404
+    """
+    e = {
+        404: b'HTTP/1.x 404 NOT FOUND\r\n\r\n<h1>NOT FOUND</h1>',
+    }
+    return e.get(code, b'')
 
 
 def random_str():
@@ -54,17 +65,6 @@ def current_user(request):
     return username
 
 
-def route_index(request):
-    """
-    PATH  '/'
-    """
-    header = 'HTTP/1.X 200 OK\r\nContent-Type: text/html\r\n'
-    username = current_user(request)
-    body = template('index.html'， username=username)
-    r = header + '\r\n' + body
-    return r.encode(encoding='utf-8')
-
-
 def response_with_header(headers, status_code=200):
     # status_code 应该有个字典，有对应的描述
     header = 'HTTP/1.x {} OK\r\n'.format(status_code)
@@ -72,6 +72,17 @@ def response_with_header(headers, status_code=200):
     header += ''.join(['{}: {}\r\n'.format(k, v)
                            for k, v in headers.items()])
     return header
+
+
+def route_index(request):
+    """
+    PATH  '/'
+    """
+    header = 'HTTP/1.X 200 OK\r\nContent-Type: text/html\r\n'
+    username = current_user(request)
+    body = template('index.html', username=username)
+    r = header + '\r\n' + body
+    return r.encode(encoding='utf-8')
 
 
 def route_login(request):
@@ -91,6 +102,7 @@ def route_login(request):
             session[session_id] = usr.username
             headers['Set-Cookie'] = 'user={}'.format(session_id)
             result = 'True'
+            # return redirect('/weibo/new')
         else:
             result = 'False'
     else:
@@ -138,6 +150,7 @@ def route_profile(request):
     r = header + '\r\n' + body
     return r.encode(encoding='utf-8')
 
+
 def route_static(request):
     """
     PATH  '/doge.gif'
@@ -179,10 +192,71 @@ def route_message(request):
     return r.encode(encoding='utf-8')
 
 
+def route_weibo_index(request):
+    headers = {
+        'Content-Type': 'text/html',
+    }
+    header = response_with_header(headers)
+    user_id = request.query.get('user_id', -1)
+    user_id = int(user_id)
+    user = User.find(user_id)
+    if user is None:
+        return error(request)
+    # 找到 user 发布的所有 weibo
+    weibos = Weibo.find_all(user_id=user.id)
+    body = template('weibo_index.html', weibos=weibos)
+    r = header + '\r\n' + body
+    return r.encode(encoding='utf-8')
+
+
+def route_weibo_new(request):
+    """
+    返回微博表单的路由
+    """
+    headers = {
+        'Content-Type': 'text/html',
+    }
+    username = current_user(request)
+    header = response_with_header(headers)
+    log('Debug username', username)
+    user = User.find_by(username=username)
+    body = template('weibo_new.html')
+    r = header + '\r\n' + body
+    return r.encode(encoding='utf-8')
+
+
+def route_weibo_add(request):
+    headers = {
+        'Content-Type': 'text/html',
+    }
+    username = current_user(request)
+    log('username', username)
+    if username == 'guest':
+        return redirect('/login')
+    else:
+        header = response_with_header(headers)
+        # log('add header', header)
+    user = User.find_by(username=username)
+    # log('add user', user)
+    # 创建微博
+    form = request.form()
+    # log('form', form)
+    w = Weibo(form)
+    # log('w', w)
+    w.user_id = user.id
+    # log('user_id', w.user_id)
+    w.save()
+    # log('save', w)
+    return redirect('/weibo?user_id={}'.format(user.id))
+
+
 route_dict = {
     '/': route_index,
     '/message': route_message,
     '/login': route_login,
     '/register': route_register,
     '/profile': route_profile,
+    '/weibo': route_weibo_index,
+    '/weibo/new': route_weibo_new,
+    '/weibo/add': route_weibo_add,
 }

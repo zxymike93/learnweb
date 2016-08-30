@@ -39,6 +39,17 @@ class Model(object):
         return path
 
     @classmethod
+    def load(cls, d):
+        """
+        从保存的字典中生成对象
+        setattr(m, k, v) 相当于 m[k]=v
+        """
+        m = cls({})
+        for k, v in d.items():
+            setattr(m, k, v)
+        return m
+
+    @classmethod
     def all(cls):
         """
         load 出来的是该 cls 所有实例的所有数据
@@ -46,7 +57,7 @@ class Model(object):
         """
         path = cls.db_path()
         data = load(path)
-        all_ins = [cls(i) for i in data]
+        all_ins = [cls.load(i) for i in data]
         return all_ins
 
     @classmethod

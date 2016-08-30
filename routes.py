@@ -204,6 +204,16 @@ def route_weibo_index(request):
         return error(request)
     # 找到 user 发布的所有 weibo
     weibos = Weibo.find_all(user_id=user.id)
+    # 手动处理 weibos 这个 list
+    # 把每个 weibo 以 <p> 的形式展现在页面
+    def weibo_tag(weibo):
+        return '<p>{} from {}@{}</p>'.format(
+            weibo.content,
+            user.username,
+            weibo.created_time,
+        )
+    # 用 join() 返回 str
+    weibos = ''.join([weibo_tag(w) for w in weibos])
     body = template('weibo_index.html', weibos=weibos)
     r = header + '\r\n' + body
     return r.encode(encoding='utf-8')

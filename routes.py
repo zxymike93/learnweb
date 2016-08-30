@@ -198,10 +198,11 @@ def route_weibo_index(request):
     # 手动处理 weibos 这个 list
     # 把每个 weibo 以 <p> 的形式展现在页面
     def weibo_tag(weibo):
-        return '<p>{} from {}@{}</p>'.format(
+        return '<p>{} from {}@{} <a href="/weibo/delete?id={}">删除</a></p>'.format(
             weibo.content,
             user.username,
             weibo.created_time,
+            weibo.id,
         )
     # 用 join() 返回 str
     weibos = ''.join([weibo_tag(w) for w in weibos])
@@ -217,6 +218,7 @@ def route_weibo_new(request):
     headers = {
         'Content-Type': 'text/html',
     }
+    username = current_user(request)
     header = response_with_header(headers)
     log('Debug username', username)
     user = User.find_by(username=username)
@@ -247,6 +249,21 @@ def route_weibo_add(request):
     return redirect('/weibo?user_id={}'.format(user.id))
 
 
+def route_weibo_delete(request):
+    headers = {
+        'Content-Type': 'text/html',
+    }
+    username = current_user(request)
+    header = response_with_header(headers)
+    user = User.find_by(username=username)
+    # 删除微博
+    weibo_id = request.query.get('id', None)
+    weibo_id = int(weibo_id)
+    w = Weibo.find(weibo_id)
+    w.delete()
+    return redirect('/weibo?user_id={}'.format(user.id))
+
+
 def login_required(route_function):
     """
     用来验证用户身份
@@ -269,4 +286,5 @@ route_dict = {
     '/weibo': route_weibo_index,
     '/weibo/new': login_required(route_weibo_new),
     '/weibo/add': login_required(route_weibo_add),
+    '/weibo/delete': login_required(route_weibo_delete),
 }

@@ -136,6 +136,18 @@ class Model(object):
         # 写进“数据库”中
         save(l, path)
 
+    def delete(self):
+        models = self.all()
+        index = -1
+        for i, m in enumerate(models):
+            if self.id == m.id:
+                index = i
+                break
+        del models[index]
+        l = [m.__dict__ for m in models]
+        path = self.db_path()
+        save(l, path)
+
 
 class User(Model):
     def __init__(self, form):

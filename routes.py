@@ -136,11 +136,7 @@ def route_profile(request):
     headers = {
         'Content-Type': 'text/html',
     }
-    username = current_user(request)
-    if username == 'guest':
-        return redirect('/')
-    else:
-        header = response_with_header(headers)
+    header = response_with_header(headers)
     # 返回当前用户的实例，以便后面调用它的属性
     user = User.find_by(username=username)
     body = template('profile.html',
@@ -174,12 +170,7 @@ def route_message(request):
         # 'Location': '/message',
     }
     log('本次请求的 method 是', request.method)
-    username = current_user(request)
-    if username == 'guest':
-        # 如果用户没登录，重定向到 login 页面
-        return redirect('/')
-    else:
-        header = response_with_header(headers)
+    header = response_with_header(headers)
     if request.method == 'POST':
         form = request.form()
         msg = Message(form)
@@ -226,7 +217,6 @@ def route_weibo_new(request):
     headers = {
         'Content-Type': 'text/html',
     }
-    username = current_user(request)
     header = response_with_header(headers)
     log('Debug username', username)
     user = User.find_by(username=username)
@@ -241,11 +231,8 @@ def route_weibo_add(request):
     }
     username = current_user(request)
     log('username', username)
-    if username == 'guest':
-        return redirect('/login')
-    else:
-        header = response_with_header(headers)
-        # log('add header', header)
+    header = response_with_header(headers)
+    # log('add header', header)
     user = User.find_by(username=username)
     # log('add user', user)
     # 创建微博
@@ -260,13 +247,26 @@ def route_weibo_add(request):
     return redirect('/weibo?user_id={}'.format(user.id))
 
 
+def login_required(route_function):
+    """
+    用来验证用户身份
+    """
+    def func(request):
+        username = current_user(request)
+        log('登录验证', username)
+        if username == 'guest':
+            return redirect('/login')
+        return route_function(request)
+    return func
+
+
 route_dict = {
     '/': route_index,
-    '/message': route_message,
     '/login': route_login,
     '/register': route_register,
-    '/profile': route_profile,
+    '/message': login_required(route_message),
+    '/profile': login_required(route_profile),
     '/weibo': route_weibo_index,
-    '/weibo/new': route_weibo_new,
-    '/weibo/add': route_weibo_add,
+    '/weibo/new': login_required(route_weibo_new),
+    '/weibo/add': login_required(route_weibo_add),
 }

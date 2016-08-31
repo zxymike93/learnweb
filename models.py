@@ -35,7 +35,7 @@ class Model(object):
         根据类名，命名一个文件来存储数据
         """
         class_name = cls.__name__
-        path = '{}.txt'.format(class_name)
+        path = 'db/{}.txt'.format(class_name)
         return path
 
     @classmethod
@@ -90,8 +90,8 @@ class Model(object):
 
     @classmethod
     def find(cls, id):
-        # 左边的 id 是指以 id 来查找用户
-        # 右边的 id 是传入的用户 id参数
+        # 左边的 id 是 find_by方法 **kwargs 里面的 key
+        # 右边的 id 是传入这个 find方法 的参数
         return cls.find_by(id=id)
 
     def __repr__(self):
@@ -181,6 +181,20 @@ class Weibo(Model):
         self.created_time = int(time.time())
         # user_id 用来关联 用户 / 他的微博
         self.user_id = form.get('user_id', None)
+
+
+class Todo(Model):
+    def __init__(self, form):
+        self.id = form.get('id', None)
+        self.created_time = int(time.time())
+        self.content = form.get('content', '')
+        self.complete = False
+
+    def toggleComplete(self):
+        self.complete = not self.complete
+
+    def status(self):
+        return 'status-done' if self.complete else 'status-active'
 
 
 def test_weibo():

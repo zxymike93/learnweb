@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>所有 Todo</title>
+</head>
+<body>
+    <form action="/todo/add" method="post">
+        <input type="text" name="content" placeholder="Todo">
+        <br/>
+        <button type="submit">添加到 Todo-List</button>
+    </form>
+    <br/>
+    {{todos}}
+</body>
+</html>

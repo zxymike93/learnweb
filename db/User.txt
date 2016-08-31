@@ -1,0 +1,32 @@
+[
+  {
+    "note": "",
+    "id": 1,
+    "username": "mike",
+    "password": "1234"
+  },
+  {
+    "note": "",
+    "id": 2,
+    "username": "gayu",
+    "password": "1234"
+  },
+  {
+    "note": "hellogua",
+    "id": 3,
+    "username": "melo",
+    "password": "carmelo"
+  },
+  {
+    "note": "melo",
+    "id": 4,
+    "username": "melo",
+    "password": "melo"
+  },
+  {
+    "note": "mars",
+    "id": 5,
+    "username": "mars",
+    "password": "1234"
+  }
+]

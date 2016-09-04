@@ -60,6 +60,11 @@ def route_weibo_new(request):
 
 
 def route_weibo_add(request):
+    """
+    这个函数相当于一个裸的 API
+    它提取某个 HTML页面 的数据
+    处理过后 redirect 到一个页面
+    """
     headers = {
         'Content-Type': 'text/html',
     }

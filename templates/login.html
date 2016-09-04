@@ -2,21 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css"
     <title>Login</title>
+    <!--<script src="http://cdn.bootcss.com/jquery/3.1.0/jquery.js"></script>-->
+    <!--<script>-->
+      <!--console.log('hello js')-->
+    <!--</script>-->
 </head>
 <body>
     <h1>Login</h1>
     <h2>Hello {{username}}</h2>
-    <form action="/login" method="post">
-        <input type="text" name="username" placeholder="username">
+    <form class="pure-form pure-form-stack" action="/login" method="post">
+        <input id="id-input-username" type="text" name="username" placeholder="username">
         <br/>
-        <input type="text" name="password" placeholder="password">
+        <input id="id-input-password" type="text" name="password" placeholder="password">
         <br/>
-        <button type="submit">Login</button>
+        <button id="id-button-submit" type="submit">Login</button>
         <br/>
         <a href="/register">Register</a>
         <br/>
-        {{result}}
     </form>
+
+    {{result}}
 </body>
 </html>

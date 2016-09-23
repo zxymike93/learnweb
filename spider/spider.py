@@ -32,7 +32,7 @@ class Movie(Model):
 def save(data):
     data = str(data)
     path = 'doubanTop250.txt'
-    with open(path, 'w+', encoding='utf-8') as f:
+    with open(path, 'a', encoding='utf-8') as f:
         f.write(data)
 
 
@@ -81,7 +81,7 @@ def main():
         u = url + str(i * 25)
         movies = movies_from_url(u)
         save(movies)
-        # print(movies)
+        print(movies)
 
 
 if __name__ == '__main__':

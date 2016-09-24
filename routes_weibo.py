@@ -130,6 +130,18 @@ def route_weibo_update(request):
     return redirect('/weibo?user_id={}'.format(user.id))
 
 
+# 在 server 的 response_for_path(path) 里实现 url-route 的映射是用 dict.get 做的
+# 得到 url 对应的 route 函数名后，用 () 调用函数并把 request 参数传进去
+#    r = {'/static': route_static,}
+#    r.update(route_dict) 
+#    response = r.get(path, error)
+#    return response(request)
+# login_required 实现在调用 route 函数前的逻辑判断
+# 举个例子：
+#   login_required(weibo_index)
+#       返回 wrap 函数名
+#           执行一段判断代码之后 
+#                返回 weibo_index 函数名
 def login_required(route_function):
     """
     用来验证用户身份

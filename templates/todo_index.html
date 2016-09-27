@@ -2,15 +2,72 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>所有 Todo</title>
+    <!--<link ref="stylesheet" href="http://http://yui.yahooapis.com/pure/0.6.0/pure-min.css">-->
+    <title>TODO</title>
+    <script src="http://cdn.bootcss.com/jquery/3.1.0/jquery.js"></script>
 </head>
 <body>
-    <form action="/todo/add" method="post">
-        <input type="text" name="content" placeholder="Todo">
-        <br/>
-        <button type="submit">添加到 Todo-List</button>
-    </form>
-    <br/>
+    <input id="id-input-content" type="text" name="content" placeholder="todo">
+    <button id="id-button-add" type="submit">ADD</button>
+    <br>
+
     {{todos}}
+
+    <script>
+        // js 版的 log 函数
+        var log = function(){
+            console.log(arguments)
+        }
+
+
+        // js 的模板字符串格式化 todo 字典
+        var insertTodo = function(todo){
+          var id = todo.id
+          var content = todo.content
+          var time = todo.created_time
+
+          var tag = `
+            <p class="status-active">
+            ${id} ${content} @ ${time}<a href="/todo/complete?id=${id}">
+            完成</a></p>
+          `
+          $('body').append(tag)
+        }
+
+
+        // 发送一个 HTTP 请求，带上 todo 要添加的 content
+        var sendAddRequest = function(content){
+            // 得到数据 log('sendAddRequest', content)
+            var todo = {
+                'content': content,
+            }
+
+            // 构造请求
+            var request = {
+                url: '/api/todo/add',
+                type: 'post',
+                // todo 字典会自动被 urlencode
+                data: todo,
+                success: function(resp){
+                    // 把字符串解析为 object
+                    var todo = JSON.parse(resp)
+                    insertTodo(todo)
+                },
+                error: function(err){
+                    log('NOT OK', err)
+                },
+            }
+
+            // 发送请求
+            jQuery.ajax(request)
+        }
+
+
+        // 给 #id-button-add 按钮绑定事件，点击时执行函数
+        $('#id-button-add').on('click', function(){
+            var content = $('#id-input-content').val()
+            sendAddRequest(content)
+        })
+    </script>
 </body>
 </html>

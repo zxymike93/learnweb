@@ -10,6 +10,8 @@ from routes import route_static
 from routes import route_dict as route_dict_main
 from routes_weibo import route_dict as route_dict_weibo
 from routes_todo import route_dict as route_dict_todo
+from routes_api_todo import route_dict as route_dict_api_todo
+
 
 
 class Request(object):
@@ -99,6 +101,7 @@ def response_for_path(path):
     responses.update(route_dict_main)
     responses.update(route_dict_weibo)
     responses.update(route_dict_todo)
+    responses.update(route_dict_api_todo)
     response = responses.get(path, error)
     return response(request)
 

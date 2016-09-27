@@ -148,6 +148,9 @@ class Model(object):
         path = self.db_path()
         save(l, path)
 
+    def json_str(self):
+        return json.dumps(self.__dict__, ensure_ascii=False)
+
 
 class User(Model):
     def __init__(self, form):
@@ -195,6 +198,8 @@ class Todo(Model):
 
     def status(self):
         return 'status-done' if self.complete else 'status-active'
+
+
 
 
 def test_weibo():

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title> basic </title>
+<style>
+    .gua-header {
+        height: 50px;
+        background: lightsteelblue;
+    }
+    .gua-container {
+      display: flex;
+    }
+    .gua-content {
+        height: 80px;
+        background: lightcoral;
+        flex-grow: 2;
+    }
+    .gua-index {
+        height: 50px;
+        background: lightblue;
+        flex-grow: 1;
+    }
+    .gua-detail {
+        height: 30px;
+        background: lightyellow;
+        flex-grow: 1;
+    }
+    .gua-footer {
+        height: 50px;
+        background: lightseagreen;
+    }
+</style>
+</head>
+<body>
+    <div class="gua-page">
+        <div class="gua-header">
+            header
+        </div>
+        <div class="gua-container">
+            <div class="gua-index clearfix">
+                index
+            </div>
+            <div class="gua-content clearfix">
+                content
+            </div>
+            <div class="gua-detail clearfix">
+                detail
+            </div>
+        </div>
+        <div class="gua-footer">
+            footer
+        </div>
+    </div>
+</body>
+</html>

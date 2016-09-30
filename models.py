@@ -185,6 +185,15 @@ class Weibo(Model):
         self.user_id = form.get('user_id', None)
 
 
+class Comment(Model):
+    def __init__(self):
+        self.id = form.get('id', None)
+        self.content = form.get('content', '')
+        self.created_time = int(time.time())
+        self.user_id = int(form.get('user_id', -1))
+        self.weibo_id = int(form.get('weibo_id', -1))
+
+
 class Todo(Model):
     def __init__(self, form):
         self.id = form.get('id', None)

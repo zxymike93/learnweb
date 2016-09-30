@@ -1,5 +1,5 @@
 #! python3
-# coding= utf-8
+# coding: utf-8
 
 import socket
 import urllib.parse
@@ -11,7 +11,6 @@ from routes import route_dict as route_dict_main
 from routes_weibo import route_dict as route_dict_weibo
 from routes_todo import route_dict as route_dict_todo
 from routes_api_todo import route_dict as route_dict_api_todo
-
 
 
 class Request(object):

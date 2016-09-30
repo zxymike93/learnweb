@@ -164,9 +164,8 @@ class User(Model):
         if usr is not None and usr.password == self.password:
             return True
 
-
     def validate_register(self):
-        return len(self.username) > 3 and len(self.password) >3
+        return len(self.username) > 3 and len(self.password) > 3
 
 
 class Message(Model):

@@ -3,7 +3,7 @@
 from utils import log
 from models import User, Message
 
-from response import session, error, template, redirect, response_with_header
+from response import session, template, redirect, response_with_header
 
 import random
 
@@ -48,19 +48,21 @@ def route_login(request):
     }
     username = current_user(request)
     if request.method == 'POST':
-        # log('login, self.headers', request.headers)
         log('login, self.cookies', request.cookies)
         form = request.form()
+        # log('login form', form)
         usr = User(form)
+        # log('login usr', usr)
         if usr.validate_login():
+            # log('验证通过')
             # session 使 cookie 不能被轻易伪造
             session_id = random_str()
             session[session_id] = usr.username
             headers['Set-Cookie'] = 'user={}'.format(session_id)
-            result = 'True'
-            # return redirect('/weibo/new')
+            result = '登录成功'
+            # return redirect('/weibo?user_id={}'.format(str(usr.id)))
         else:
-            result = 'False'
+            result = '用户名或密码错误'
     else:
         result = ''
     body = template('login.html', result=result, username=username)

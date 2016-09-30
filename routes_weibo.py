@@ -25,18 +25,49 @@ def route_weibo_index(request):
         return error(request)
     # 找到 user 发布的所有 weibo
     weibos = Weibo.find_all(user_id=user.id)
-    # 手动处理 weibos 这个 list
-    # 把每个 weibo 以 <p> 的形式展现在页面
+
+    # 任一 user 访问任一 index
+    current_username = current_user(request)
+    u = User.find_by(username=current_username)
+    if u is None:
+        return redirect('/login')
+
     def weibo_tag(weibo):
-        return '<p>{} from {}@{} <a href="/weibo/delete?id={}">删除</a> <a href="/weibo/edit?id={}">修改</a></p>'.format(
-            weibo.content,
-            user.username,
-            weibo.created_time,
-            weibo.id,
-            weibo.id,
-        )
+        comment_list = Comment.find_all(weibo_id=weibo.id)
+        comments = '<br>'.join([c.content for c in comment_list])
+        # format 函数的字典用法
+        # 注意 u.id 是 current_user
+        # user.username 是博主
+        w = {
+            'id': weibo.id,
+            'user_id': u.id,
+            'content': weibo.content,
+            'username': user.username,
+            'time': weibo.created_time,
+            'comments': comments,
+        }
+        # 手动处理 weibos 这个 list
+        # 把每个 weibo 以 <p> 的形式展现在页面
+        return """
+            <p>{content} from {username}@{time}
+                <a href="/weibo/delete?id={id}">删除</a>
+                <a href="/weibo/edit?id={id}">修改</a></p>
+                <button class="weibo-show-comment" data-id="{id}">评论</button>
+                <div>
+                    {comments}
+                </div>
+                <div id="id-div-comment-{id}" class="weibo-comment-form weibo-hide">
+                    <form action="/weibo/comment/add" method="post">
+                        <input name="user_id" value="{user_id}" type="hidden">
+                        <input name="weibo_id" value="{id}" type="hidden">
+                        <textarea name="content"></textarea>
+                        <button type="submit">添加评论</button>
+                    </form>
+                </div>
+            </p>
+            """.format(**w)
     # 用 join() 返回 str
-    weibos = ''.join([weibo_tag(w) for w in weibos])
+    weibos = '\n'.join([weibo_tag(w) for w in weibos])
     body = template('weibo_index.html', weibos=weibos)
     r = header + '\r\n' + body
     return r.encode(encoding='utf-8')

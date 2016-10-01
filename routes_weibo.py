@@ -161,6 +161,15 @@ def route_weibo_update(request):
     return redirect('/weibo?user_id={}'.format(user.id))
 
 
+def route_comment_add(request):
+    form = request.form()
+    c = Comment(form)
+    log('commentAdd c', c)
+    c.save()
+    w = Weibo.find(c.weibo_id)
+    return redirect('/weibo?user_id={}'.format(w.user_id))
+
+
 # 在 server 的 response_for_path(path) 里实现 url-route 的映射是用 dict.get 做的
 # 得到 url 对应的 route 函数名后，用 () 调用函数并把 request 参数传进去
 #    r = {'/static': route_static,}
@@ -179,7 +188,7 @@ def login_required(route_function):
     """
     def func(request):
         username = current_user(request)
-        log('登录验证', username)
+        # log('登录验证', username)
         if username == 'guest':
             return redirect('/login')
         return route_function(request)
@@ -193,4 +202,5 @@ route_dict = {
     '/weibo/delete': login_required(route_weibo_delete),
     '/weibo/edit': login_required(route_weibo_edit),
     '/weibo/update': login_required(route_weibo_update),
+    '/weibo/comment/add': login_required(route_comment_add),
 }

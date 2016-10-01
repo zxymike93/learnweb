@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from models import User, Weibo
+from models import User, Weibo, Comment
 
 from response import session, error, template, redirect, response_with_header
 

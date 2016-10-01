@@ -186,7 +186,7 @@ class Weibo(Model):
 
 
 class Comment(Model):
-    def __init__(self):
+    def __init__(self, form):
         self.id = form.get('id', None)
         self.content = form.get('content', '')
         self.created_time = int(time.time())

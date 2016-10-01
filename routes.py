@@ -48,7 +48,7 @@ def route_login(request):
     }
     username = current_user(request)
     if request.method == 'POST':
-        log('login, self.cookies', request.cookies)
+        # log('login, self.cookies', request.cookies)
         form = request.form()
         # log('login form', form)
         usr = User(form)

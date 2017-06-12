@@ -1,6 +1,7 @@
-#!/usr/bin/env python3
+#! /usr/bin/env python3
 
 import time
+
 
 def log(*args, **kwargs):
     """

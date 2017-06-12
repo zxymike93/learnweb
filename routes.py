@@ -99,9 +99,9 @@ def route_profile(request):
     # 返回当前用户的实例，以便后面调用它的属性
     user = User.find_by(username=username)
     body = template('profile.html',
-                     id=user.id,
-                     username=user.username,
-                     note=user.note)
+                    id=user.id,
+                    username=user.username,
+                    note=user.note)
     r = header + '\r\n' + body
     return r.encode(encoding='utf-8')
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#! /usr/bin/env python3
 
 """
 自己写的野鸡 todo-list
@@ -22,11 +22,13 @@ def route_todo_index(request):
     header = response_with_header(headers)
     todos = Todo.all()
     log('todos', todos)
+
     def todo_tag(t):
         status = t.status()
-        return '<p class="{}">{}, {}@{} ' \
-               '<a href="/todo/delete?id={}">删除</a> ' \
-               '<a href="/todo/complete?id={}">完成</a></p>'.format(
+        tag = ('<p class="{}">{}, {}@{} '
+               '<a href="/todo/delete?id={}">删除</a> '
+               '<a href="/todo/complete?id={}">完成</a></p>')
+        return tag.format(
             status,
             t.id,
             t.content,

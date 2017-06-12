@@ -1,5 +1,5 @@
-#!/user/bin/env python3
-#-*- coding: utf-8 -*-
+#! /user/bin/env python3
+# -*- coding: utf-8 -*-
 
 import json
 import time
@@ -96,7 +96,8 @@ class Model(object):
 
     def __repr__(self):
         class_name = self.__class__.__name__
-        properties = ['{}: ({})'.format(k, v) for k, v in self.__dict__.items()]
+        properties = ['{}: ({})'.format(k, v)
+                      for k, v in self.__dict__.items()]
         s = '\n'.join(properties)
         return '>{}\n{}<\n'.format(class_name, s)
 
@@ -206,8 +207,6 @@ class Todo(Model):
 
     def status(self):
         return 'status-done' if self.complete else 'status-active'
-
-
 
 
 def test_weibo():

@@ -1,5 +1,5 @@
 from models import Todo
-from response import response_with_header, template
+from response import redirect, response_with_header, template
 from utils import log
 
 
@@ -9,9 +9,12 @@ def route_index():
     }
     header = response_with_header(headers)
     todos = Todo.all()
+
     def todo_tag(todo):
         status = todo.status()
-        return '<p class="{}">{} {} @ {}<a href="/todo/complete?id={}">完成</a></p>'.format(
+        tag = ('<p class="{}">{} {} @ {}'
+               '<a href="/todo/complete?id={}">完成</a></p>')
+        return tag.format(
             status,
             todo.id,
             todo.content,
@@ -41,9 +44,9 @@ def route_add(request):
 
 
 def route_complete(request):
-    headers = {
-        'Content-Type': 'text/html',
-    }
+    # headers = {
+    #     'Content-Type': 'text/html',
+    # }
     id = int(request.query.get('id', -1))
     t = Todo.find(id)
     t.toggleComplete()

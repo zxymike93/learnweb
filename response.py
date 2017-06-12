@@ -35,7 +35,7 @@ def response_with_header(headers, status_code=200):
     header = 'HTTP/1.x {} OK\r\n'.format(status_code)
     #  \r\n 不放在 join 前面，保证每个 header 都换行
     header += ''.join(['{}: {}\r\n'.format(k, v)
-                           for k, v in headers.items()])
+                       for k, v in headers.items()])
     return header
 
 

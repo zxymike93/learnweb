@@ -1,4 +1,4 @@
-#! python3
+#! /usr/bin/env python3
 
 import socket
 import ssl
@@ -6,7 +6,7 @@ import ssl
 
 def parsed_url(url):
     """
-    分析 url 
+    分析 url
     返回 protocol, host, port, path
     """
     # 分割出 protocol
@@ -18,23 +18,24 @@ def parsed_url(url):
         left = url.split('://')[1]
     else:
         left = url
-    
+
     # 分割出 path
     # 分割出 host
-    if left.find('/') == -1:
+    i = left.find('/')
+    if i == -1:
         host = left
         path = '/'
     else:
         host = left[:i]
         path = left[i:]
-    
+
     # http 请求的默认 port=80
     # https 请求的默认 port=443
     port_dict = {
         'http': 80,
         'https': 443,
     }
-    port = port_dict[procotol]
+    port = port_dict[protocol]
     # 有特别指明 port 则分割出 host, port
     if host.find(':') != -1:
         host = host.split(':')[0]
@@ -82,12 +83,12 @@ def parsed_response(r):
     header, body = r.split('\r\n\r\n', 1)
     h = header.split('\r\n')
     status_code = int(h[0].split()[1])
-    
+
     headers = {}
     for line in h[1:]:
         k, v = line.split(': ')
         headers[k] = v
-    
+
     return status_code, headers, body
 
 
@@ -99,28 +100,29 @@ def get(url):
     """
     # 分析出 url 的 protocol, host, port, path
     protocol, host, port, path = parsed_url(url)
-    
+
     # 创建 socket 实例
     # 建立连接
     s = socket_by_protocol(protocol)
     s.connect((host, port))
-    
+
     # request 以 utf-8 编码发送
-    request = 'GET {} HTTP/1.1\r\nhost:{}\r\nConnection: close\r\n\r\n'.format(path, host)
+    request = ('GET {} HTTP/1.1\r\nhost:{}\r\n'
+               'Connection: close\r\n\r\n'.format(path, host))
     encoding = 'utf-8'
     s.send(request.encode(encoding))
-    
+
     # 接收 response 并解码为 str
     response = response_by_socket(s)
     r = response.decode(encoding)
-    
+
     # 如果 status_code 是301
     # 生成一个重定向
     status_code, headers, body = parsed_response(r)
     if status_code == 301:
         url = headers['Location']
         return get(url)
-    
+
     return status_code, headers, body
 
 

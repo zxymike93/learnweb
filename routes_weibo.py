@@ -82,9 +82,9 @@ def route_weibo_new(request):
     headers = {
         'Content-Type': 'text/html',
     }
-    username = current_user(request)
+    # username = current_user(request)
     header = response_with_header(headers)
-    user = User.find_by(username=username)
+    # user = User.find_by(username=username)
     body = template('weibo_new.html')
     r = header + '\r\n' + body
     return r.encode(encoding='utf-8')
@@ -96,12 +96,12 @@ def route_weibo_add(request):
     它提取某个 HTML页面 的数据
     处理过后 redirect 到一个页面
     """
-    headers = {
-        'Content-Type': 'text/html',
-    }
+    # headers = {
+    #     'Content-Type': 'text/html',
+    # }
     username = current_user(request)
     log('发微博的用户: ', username)
-    header = response_with_header(headers)
+    # header = response_with_header(headers)
     user = User.find_by(username=username)
     # 创建一个新微博实例
     # 就是把 weibo_new.html 的数据处理
@@ -113,11 +113,11 @@ def route_weibo_add(request):
 
 
 def route_weibo_delete(request):
-    headers = {
-        'Content-Type': 'text/html',
-    }
+    # headers = {
+    #     'Content-Type': 'text/html',
+    # }
     username = current_user(request)
-    header = response_with_header(headers)
+    # header = response_with_header(headers)
     user = User.find_by(username=username)
     # 删除微博
     weibo_id = request.query.get('id', None)
@@ -173,14 +173,14 @@ def route_comment_add(request):
 # 在 server 的 response_for_path(path) 里实现 url-route 的映射是用 dict.get 做的
 # 得到 url 对应的 route 函数名后，用 () 调用函数并把 request 参数传进去
 #    r = {'/static': route_static,}
-#    r.update(route_dict) 
+#    r.update(route_dict)
 #    response = r.get(path, error)
 #    return response(request)
 # login_required 实现在调用 route 函数前的逻辑判断
 # 举个例子：
 #   login_required(weibo_index)
 #       返回 wrap 函数名
-#           执行一段判断代码之后 
+#           执行一段判断代码之后
 #                返回 weibo_index 函数名
 def login_required(route_function):
     """

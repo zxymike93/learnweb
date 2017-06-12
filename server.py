@@ -1,5 +1,4 @@
-#! python3
-# coding: utf-8
+#! /usr/bin/env python3
 
 import socket
 import urllib.parse
@@ -93,7 +92,7 @@ def response_for_path(path):
     request.path = path
     request.query = query
     # log('path and query', path, query)
-    
+
     responses = {
         '/static': route_static,
     }
@@ -130,7 +129,8 @@ def run(host='', port=3000):
                 # 设置 request 的 method
                 request.method = req.split()[0]
                 # 把 headers 第一行的请求行去掉之后再传入 add_headers
-                request.add_headers(req.split('\r\n\r\n', 1)[0].split('\r\n')[1:])
+                request.add_headers(req.split('\r\n\r\n', 1)[0]
+                                    .split('\r\n')[1:])
                 # 把 body 放入 request 中
                 request.body = req.split('\r\n\r\n', 1)[1]
                 # 用 response_for_path 函数来得到 path 对应的响应内容（页面）

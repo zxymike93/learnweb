@@ -11,7 +11,8 @@ class Model(object):
     """
     def __repr__(self):
         class_name = self.__class__.__name__
-        properties = (u'{} = ({})'.format(k, v) for k, v in self.__dict__.items())
+        properties = (u'{} = ({})'.format(k, v)
+                      for k, v in self.__dict__.items())
         r = u'\n<{}:\n  {}\n>'.format(class_name, u'\n  '.join(properties))
         return r
 
@@ -63,7 +64,8 @@ def movie_from_div(div):
     movie.quote = add_quote(div)
     infos = div.xpath('.//div[@class="bd"]/p/text()')
     movie.staff, movie.publish_info = [i.strip() for i in infos[:2]]
-    movie.number_of_comments = div.xpath('.//div[@class="star"]/span')[-1].text[:-3]
+    movie.number_of_comments = div.xpath(
+        './/div[@class="star"]/span')[-1].text[:-3]
     return movie
 
 

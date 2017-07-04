@@ -1,4 +1,4 @@
-#! python3
+#! /usr/bin/env python3
 
 import socket
 import ssl
@@ -16,7 +16,8 @@ class Model(object):
     """
     def __repr__(self):
         class_name = self.__class__.__name__
-        properties = (u'{} = ({})'.format(k, v) for k, v in self.__dict__.items())
+        properties = (u'{} = ({})'.format(k, v)
+                      for k, v in self.__dict__.items())
         r = u'\n<{}:\n  {}\n>'.format(class_name, u'\n  '.join(properties))
         return r
 
@@ -104,7 +105,7 @@ def response_by_socket(s):
         response += r
         if len(r) == 0:
             break
-    
+
     return response
 
 
@@ -141,7 +142,8 @@ def get(url):
     s.connect((host, port))
 
     # request 以 utf-8 编码发送
-    request = 'GET {} HTTP/1.1\r\nhost:{}\r\nConnection: close\r\n\r\n'.format(path, host)
+    request = ('GET {} HTTP/1.1\r\nhost:{}\r\n'
+               'Connection: close\r\n\r\n').format(path, host)
     encoding = 'utf-8'
     s.send(request.encode(encoding))
 
@@ -173,7 +175,8 @@ def movie_from_div(div):
     movie.quote = div.xpath('.//span[@class="inq"]')[0].text
     infos = div.xpath('.//div[@class="bd"]/p/text()')
     movie.staff, movie.publish_info = [i.strip() for i in infos[:2]]
-    movie.number_of_comments = div.xpath('.//div[@class="star"]/span')[-1].text[:-3]
+    movie.number_of_comments = div.xpath(
+        './/div[@class="star"]/span')[-1].text[:-3]
     return movie
 
 
@@ -193,7 +196,7 @@ def movie_from_url(url):
 def main():
     url = 'http://movie.douban.com/top250'
     movies = movie_from_url(url)
-    log('Names', names)
+    # log('Names', names)
     log('movies', movies[0])
     # download_covers(movies)
 
